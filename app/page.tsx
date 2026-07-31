@@ -126,12 +126,47 @@ function PrimaryButton({
 
 function PassHome({ onScan }: { onScan: () => void }) {
   return (
-    <motion.section className="screen ledger-pane with-nav" {...screenMotion}>
-      <LedgerBar label="FIT PASS" />
-      <h1 className="tailor-voice">Sizes lie.<br />Your pass doesn&apos;t.</h1>
-      <PassCard onTap={onScan} />
-      <p className="tap-hint">TAP YOUR PASS TO A GARMENT</p>
-      <PrimaryButton onClick={onScan}>Tap a garment</PrimaryButton>
+    <motion.section className="screen home-page with-nav" {...screenMotion}>
+      <LedgerBar label="FIT CHECK" />
+      <div className="home-intro">
+        <span className="home-kicker"><i /> YOUR PRIVATE FIT PROFILE IS ACTIVE</span>
+        <h1 className="tailor-voice">Know the fit.<br />Skip the guess.</h1>
+        <p>One private profile translates every brand into a verdict you can trust.</p>
+      </div>
+
+      <button className="recent-fit" aria-label="Open latest fit check">
+        <span className="recent-art"><Shirt size={34} strokeWidth={1.35} /></span>
+        <span className="recent-copy">
+          <small>LAST FIT CHECK · NORTH STUDIO</small>
+          <strong>Unstructured blazer</strong>
+          <em><Check size={12} /> Best fit — M, altered</em>
+        </span>
+        <ChevronRight size={18} />
+      </button>
+
+      <div className="shop-picks">
+        <div className="shop-picks-head">
+          <span>FROM YOUR SHOPS</span>
+          <small>PRIVATE FIT PICKS</small>
+        </div>
+        <div className="shop-pick-grid">
+          <button>
+            <small>EVERLANE</small>
+            <strong>Wool blazer</strong>
+            <span><i>92%</i> FIT MATCH · M</span>
+          </button>
+          <button>
+            <small>COS</small>
+            <strong>Barrel trousers</strong>
+            <span><i>88%</i> FIT MATCH · S</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="home-action">
+        <p><ScanLine size={15} /> READY FOR A NEW GARMENT</p>
+        <PrimaryButton onClick={onScan}>Start a Fit Check</PrimaryButton>
+      </div>
     </motion.section>
   );
 }
