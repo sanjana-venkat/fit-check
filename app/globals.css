@@ -127,10 +127,40 @@ button { color: inherit; font: inherit; -webkit-tap-highlight-color: transparent
   line-height: 1.45;
 }
 
+.home-preferences { margin-top: 22px; }
+.home-preferences > span {
+  display: block;
+  margin-bottom: 9px;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 7px;
+  letter-spacing: .15em;
+}
+.home-preferences > div { display: flex; gap: 7px; flex-wrap: wrap; }
+.home-preferences button {
+  min-height: 29px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 8px;
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease, color .2s ease;
+}
+.home-preferences button.selected {
+  border-color: rgba(72,84,69,.4);
+  background: rgba(112,128,106,.13);
+  color: var(--sage-dark);
+}
+
 .recent-fit {
   width: 100%;
   min-height: 137px;
-  margin-top: 34px;
+  margin-top: 25px;
   padding: 16px;
   display: grid;
   grid-template-columns: 70px 1fr 18px;
@@ -207,18 +237,53 @@ button { color: inherit; font: inherit; -webkit-tap-highlight-color: transparent
 .shop-pick-grid i { color: var(--sage-dark); font-style: normal; font-weight: 500; }
 
 .home-action { margin-top: auto; }
-.home-action > p {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: var(--muted);
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 7px;
-  letter-spacing: .15em;
+.home-action .ledger-cta { margin-top: 24px; }
+
+.sheet-backdrop {
+  position: absolute;
+  z-index: 60;
+  inset: 0;
+  border: 0;
+  background: rgba(23,20,15,.27);
+  backdrop-filter: blur(2px);
 }
-.home-action .ledger-cta { margin-top: 16px; }
+.scan-sheet {
+  position: absolute;
+  z-index: 70;
+  inset: 54px 0 0;
+  overflow: hidden;
+  background: var(--paper);
+  border-top: 1px solid rgba(23,20,15,.28);
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -16px 42px rgba(23,20,15,.17);
+}
+.scan-sheet .ledger-pane { position: absolute; inset: 0; padding-top: 46px; }
+.sheet-handle {
+  position: absolute;
+  z-index: 90;
+  top: 11px;
+  left: 50%;
+  width: 42px;
+  height: 4px;
+  border-radius: 5px;
+  background: var(--ink);
+  transform: translateX(-50%);
+  opacity: .22;
+}
+.sheet-close {
+  position: absolute;
+  z-index: 90;
+  top: 14px;
+  right: 17px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--paper);
+  cursor: pointer;
+}
 
 .ledger-bar {
   display: flex;

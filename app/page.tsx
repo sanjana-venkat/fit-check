@@ -9,16 +9,24 @@ import {
   Shirt,
   UserRound,
   WalletCards,
+  X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 type Tab = "fit" | "scan" | "closet" | "profile";
 
 const screenMotion = {
-  initial: { opacity: 0, y: 10 },
+  initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8 },
-  transition: { duration: 0.28, ease: "easeOut" as const },
+  exit: { opacity: 0, y: -5 },
+  transition: { duration: 0.36, ease: [0.22, 1, 0.36, 1] as const },
+};
+
+const scanStepMotion = {
+  initial: { opacity: 0, y: 14, scale: 0.992 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: -8, scale: 0.996 },
+  transition: { duration: 0.38, ease: [0.22, 1, 0.36, 1] as const },
 };
 
 function LedgerBar({ label }: { label: string }) {
@@ -125,6 +133,14 @@ function PrimaryButton({
 }
 
 function PassHome({ onScan }: { onScan: () => void }) {
+  const [preferences, setPreferences] = useState(["Fitted shoulders", "Relaxed waist"]);
+  const togglePreference = (preference: string) =>
+    setPreferences((current) =>
+      current.includes(preference)
+        ? current.filter((item) => item !== preference)
+        : [...current, preference]
+    );
+
   return (
     <motion.section className="screen home-page with-nav" {...screenMotion}>
       <LedgerBar label="FIT CHECK" />
@@ -132,6 +148,23 @@ function PassHome({ onScan }: { onScan: () => void }) {
         <span className="home-kicker"><i /> YOUR PRIVATE FIT PROFILE IS ACTIVE</span>
         <h1 className="tailor-voice">Know the fit.<br />Skip the guess.</h1>
         <p>One private profile translates every brand into a verdict you can trust.</p>
+      </div>
+
+      <div className="home-preferences">
+        <span>YOUR FIT</span>
+        <div>
+          {["Fitted shoulders", "Relaxed waist", "Full length"].map((preference) => (
+            <button
+              key={preference}
+              className={preferences.includes(preference) ? "selected" : ""}
+              onClick={() => togglePreference(preference)}
+              aria-pressed={preferences.includes(preference)}
+            >
+              {preferences.includes(preference) && <Check size={10} />}
+              {preference}
+            </button>
+          ))}
+        </div>
       </div>
 
       <button className="recent-fit" aria-label="Open latest fit check">
@@ -164,14 +197,13 @@ function PassHome({ onScan }: { onScan: () => void }) {
       </div>
 
       <div className="home-action">
-        <p><ScanLine size={15} /> READY FOR A NEW GARMENT</p>
         <PrimaryButton onClick={onScan}>Start a Fit Check</PrimaryButton>
       </div>
     </motion.section>
   );
 }
 
-function ScanFlow({ onDone }: { onDone: () => void }) {
+function ScanFlow({ onDone, onClose }: { onDone: () => void; onClose: () => void }) {
   const [step, setStep] = useState(0);
   const [shareOn, setShareOn] = useState(true);
   const [shared, setShared] = useState(false);
@@ -194,10 +226,21 @@ function ScanFlow({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <motion.section className="screen scan-flow" {...screenMotion}>
-      <AnimatePresence mode="wait">
+    <motion.section
+      className="scan-sheet"
+      initial={{ y: "100%" }}
+      animate={{ y: 0 }}
+      exit={{ y: "100%" }}
+      transition={{ type: "spring", stiffness: 245, damping: 28, mass: 0.9 }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Fit Check scanner"
+    >
+      <span className="sheet-handle" aria-hidden="true" />
+      <button className="sheet-close" onClick={onClose} aria-label="Close scanner"><X size={17} /></button>
+      <AnimatePresence mode="popLayout">
         {step === 0 && (
-          <motion.div key="pass" className="ledger-pane" {...screenMotion}>
+          <motion.div key="pass" className="ledger-pane" {...scanStepMotion}>
             <LedgerBar label="FIT PASS" />
             <h1 className="tailor-voice">Sizes lie.<br />Your pass doesn&apos;t.</h1>
             <PassCard onTap={() => setStep(1)} />
@@ -207,7 +250,7 @@ function ScanFlow({ onDone }: { onDone: () => void }) {
         )}
 
         {step === 1 && (
-          <motion.div key="reading" className="ledger-pane reading-pane" {...screenMotion}>
+          <motion.div key="reading" className="ledger-pane reading-pane" {...scanStepMotion}>
             <LedgerBar label="READING GARMENT" />
             <div className="garment-art reading"><Blazer /></div>
             <p className="mono-detail">UNSTRUCTURED BLAZER · WOOL 96%</p>
@@ -216,7 +259,7 @@ function ScanFlow({ onDone }: { onDone: () => void }) {
         )}
 
         {step === 2 && (
-          <motion.div key="verdict" className="ledger-pane" {...screenMotion}>
+          <motion.div key="verdict" className="ledger-pane" {...scanStepMotion}>
             <LedgerBar label="THE VERDICT" />
             <div className="garment-art verdict-art"><Blazer annotate /></div>
             <div className="verdict-copy">
@@ -230,7 +273,7 @@ function ScanFlow({ onDone }: { onDone: () => void }) {
         )}
 
         {step === 3 && (
-          <motion.div key="vouch" className="ledger-pane" {...screenMotion}>
+          <motion.div key="vouch" className="ledger-pane" {...scanStepMotion}>
             <LedgerBar label="THE VOUCH" />
             <h1 className="tailor-voice vouch-title">Three bodies like yours have worn this.</h1>
             <div className="figures">
@@ -245,7 +288,7 @@ function ScanFlow({ onDone }: { onDone: () => void }) {
         )}
 
         {step === 4 && !shared && (
-          <motion.div key="terms" className="ledger-pane" {...screenMotion}>
+          <motion.div key="terms" className="ledger-pane" {...scanStepMotion}>
             <LedgerBar label="YOUR TERMS" />
             <h1 className="tailor-voice terms-title">The store learns one word.</h1>
             <div className="privacy-rows">
@@ -280,7 +323,7 @@ function ScanFlow({ onDone }: { onDone: () => void }) {
         )}
 
         {step === 4 && shared && (
-          <motion.div key="shared" className="ledger-pane shared-pane" {...screenMotion}>
+          <motion.div key="shared" className="ledger-pane shared-pane" {...scanStepMotion}>
             <LedgerBar label="DONE" />
             <div className="verdict-stamp">
               <span>FITS</span>
@@ -376,16 +419,24 @@ function BottomNav({ current, onNavigate }: { current: Tab; onNavigate: (tab: Ta
 }
 
 export default function HomePage() {
-  const [tab, setTab] = useState<Tab>("fit");
+  const [tab, setTab] = useState<Exclude<Tab, "scan">>("fit");
+  const [scanOpen, setScanOpen] = useState(false);
 
   useEffect(() => {
     const saved = window.localStorage.getItem("fit-check-tab") as Tab | null;
-    if (saved && ["fit", "closet", "profile"].includes(saved)) setTab(saved);
+    if (saved && ["fit", "closet", "profile"].includes(saved)) {
+      setTab(saved as Exclude<Tab, "scan">);
+    }
   }, []);
 
   const navigate = (next: Tab) => {
+    if (next === "scan") {
+      setScanOpen(true);
+      return;
+    }
+    setScanOpen(false);
     setTab(next);
-    if (next !== "scan") window.localStorage.setItem("fit-check-tab", next);
+    window.localStorage.setItem("fit-check-tab", next);
   };
 
   return (
@@ -399,11 +450,26 @@ export default function HomePage() {
         <span className="phone-notch" aria-hidden="true" />
         <AnimatePresence mode="wait">
           {tab === "fit" && <PassHome key="fit" onScan={() => navigate("scan")} />}
-          {tab === "scan" && <ScanFlow key="scan" onDone={() => navigate("fit")} />}
           {tab === "closet" && <Closet key="closet" />}
           {tab === "profile" && <Profile key="profile" />}
         </AnimatePresence>
-        {tab !== "scan" && <BottomNav current={tab} onNavigate={navigate} />}
+        <BottomNav current={scanOpen ? "scan" : tab} onNavigate={navigate} />
+        <AnimatePresence>
+          {scanOpen && (
+            <>
+              <motion.button
+                className="sheet-backdrop"
+                aria-label="Close scanner"
+                onClick={() => setScanOpen(false)}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.24 }}
+              />
+              <ScanFlow key="scan" onClose={() => setScanOpen(false)} onDone={() => navigate("fit")} />
+            </>
+          )}
+        </AnimatePresence>
         <span className="phone-home" aria-hidden="true" />
       </div>
     </main>
