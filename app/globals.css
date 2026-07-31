@@ -632,8 +632,6 @@ button { color: inherit; font: inherit; -webkit-tap-highlight-color: transparent
 .bottom-nav small { font-size: 7px; font-weight: 600; }
 .bottom-nav button.active { color: var(--ink); }
 .bottom-nav button.active > span { background: rgba(112,128,106,.15); color: var(--sage-dark); }
-.bottom-nav .scan-tab > span { width: 42px; height: 42px; margin-top: -6px; background: var(--ink); color: var(--paper); box-shadow: 3px 4px 0 rgba(23,20,15,.12); }
-.bottom-nav .scan-tab.active > span { background: var(--sage); color: white; }
 
 .desktop-context { display: none; }
 

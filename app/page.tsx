@@ -397,20 +397,20 @@ function Profile() {
 function BottomNav({ current, onNavigate }: { current: Tab; onNavigate: (tab: Tab) => void }) {
   const items = [
     { label: "Fit Check", icon: WalletCards, tab: "fit" as Tab },
-    { label: "Scan", icon: ScanLine, tab: "scan" as Tab, primary: true },
+    { label: "Scan", icon: ScanLine, tab: "scan" as Tab },
     { label: "Closet", icon: Shirt, tab: "closet" as Tab },
     { label: "Profile", icon: UserRound, tab: "profile" as Tab },
   ];
   return (
     <nav className="bottom-nav" aria-label="Main navigation">
-      {items.map(({ label, icon: Icon, tab, primary }) => (
+      {items.map(({ label, icon: Icon, tab }) => (
         <button
           key={tab}
-          className={`${current === tab ? "active" : ""} ${primary ? "scan-tab" : ""}`}
+          className={current === tab ? "active" : ""}
           onClick={() => onNavigate(tab)}
           aria-current={current === tab ? "page" : undefined}
         >
-          <span><Icon size={primary ? 21 : 19} strokeWidth={1.8} /></span>
+          <span><Icon size={19} strokeWidth={1.8} /></span>
           <small>{label}</small>
         </button>
       ))}
