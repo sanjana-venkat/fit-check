@@ -539,19 +539,12 @@ function BottomNav({ current, onNavigate }: { current: Tab; onNavigate: (tab: Ta
 }
 
 function ConceptAsset({ view }: { view: Exclude<SiteView, "app"> }) {
-  const [captionVisible, setCaptionVisible] = useState(true);
   const copy = {
     film: { eyebrow: "THE FILM", title: "See the system in motion.", note: "A private fit profile moving from garment tap to trusted verdict." },
     model: { eyebrow: "THE HOLDER", title: "Personal, never exposed.", note: "The body stays human. The data stays private." },
     airtag: { eyebrow: "THE TAP", title: "Fit trust at the garment.", note: "A familiar physical gesture unlocks an anonymous fit check." },
     wallet: { eyebrow: "THE PASS", title: "Your verdict, in your wallet.", note: "Carry the answer—not the measurements." },
   }[view];
-
-  useEffect(() => {
-    setCaptionVisible(true);
-    const timer = window.setTimeout(() => setCaptionVisible(false), 1000);
-    return () => window.clearTimeout(timer);
-  }, [view]);
 
   return (
     <motion.figure
@@ -585,20 +578,11 @@ function ConceptAsset({ view }: { view: Exclude<SiteView, "app"> }) {
           }
         />
       )}
-      <AnimatePresence>
-        {captionVisible && (
-          <motion.figcaption
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: .3, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <span>{copy.eyebrow}</span>
-            <strong>{copy.title}</strong>
-            <p>{copy.note}</p>
-          </motion.figcaption>
-        )}
-      </AnimatePresence>
+      <figcaption>
+        <span>{copy.eyebrow}</span>
+        <strong>{copy.title}</strong>
+        <p>{copy.note}</p>
+      </figcaption>
     </motion.figure>
   );
 }
