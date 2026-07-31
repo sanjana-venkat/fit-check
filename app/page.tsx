@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Check,
+  ChevronLeft,
   ChevronRight,
   Heart,
   LockKeyhole,
@@ -409,8 +410,45 @@ function Closet() {
 }
 
 function Profile() {
+  const [scanSlide, setScanSlide] = useState(0);
+  const scanSlides = [
+    {
+      label: "SCAN SUMMARY",
+      title: "Private body profile",
+      measurements: [
+        ["12", "POINTS"],
+        ["98%", "SCAN QUALITY"],
+        ["TODAY", "ON DEVICE"],
+        ["01", "ACTIVE PROFILE"],
+      ],
+    },
+    {
+      label: "UPPER BODY",
+      title: "Jackets & tops",
+      measurements: [
+        ["15.2 in", "SHOULDERS"],
+        ["35.1 in", "CHEST"],
+        ["23.4 in", "SLEEVE"],
+        ["22.8 in", "TORSO"],
+      ],
+    },
+    {
+      label: "LOWER BODY",
+      title: "Trousers & skirts",
+      measurements: [
+        ["28.6 in", "WAIST"],
+        ["38.1 in", "HIP"],
+        ["30.3 in", "INSEAM"],
+        ["11.7 in", "RISE"],
+      ],
+    },
+  ];
+  const slide = scanSlides[scanSlide];
+  const changeSlide = (direction: number) =>
+    setScanSlide((current) => (current + direction + scanSlides.length) % scanSlides.length);
+
   return (
-    <motion.section className="screen simple-page with-nav" {...screenMotion}>
+    <motion.section className="screen simple-page profile-page with-nav" {...screenMotion}>
       <LedgerBar label="YOUR PASS" />
       <h1 className="tailor-voice">One body,<br />kept private.</h1>
       <div className="profile-pass">
@@ -421,6 +459,49 @@ function Profile() {
         </span>
         <span className="active-mark"><i /> ACTIVE</span>
       </div>
+      <section className="body-scan" aria-label="Private body scan measurements">
+        <div className="body-scan-heading">
+          <span>BODY SCAN</span>
+          <small><LockKeyhole size={10} /> STORED ON THIS DEVICE</small>
+        </div>
+        <div className="scan-carousel">
+          <AnimatePresence mode="wait">
+            <motion.article
+              key={scanSlide}
+              className="scan-card"
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -14 }}
+              transition={{ duration: .25, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div className="scan-portrait">
+                <img src="/fit-pass-model.webp" alt="Fit Check private profile holder" />
+                <span><i /> SCAN ACTIVE</span>
+              </div>
+              <div className="scan-copy">
+                <small>{slide.label}</small>
+                <strong>{slide.title}</strong>
+                <div className="measurement-grid">
+                  {slide.measurements.map(([value, label]) => (
+                    <span key={label}>
+                      <b>{value}</b>
+                      <em>{label}</em>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </motion.article>
+          </AnimatePresence>
+          <div className="scan-controls">
+            <button onClick={() => changeSlide(-1)} aria-label="Previous body scan details"><ChevronLeft size={15} /></button>
+            <div aria-label={`Slide ${scanSlide + 1} of ${scanSlides.length}`}>
+              {scanSlides.map((item, index) => <i key={item.label} className={index === scanSlide ? "active" : ""} />)}
+            </div>
+            <button onClick={() => changeSlide(1)} aria-label="Next body scan details"><ChevronRight size={15} /></button>
+          </div>
+        </div>
+        <p>Prototype scan values · not inferred from the portrait.</p>
+      </section>
       <div className="profile-facts">
         <div><span>18</span><small>ANONYMOUS<br />BODY MATCHES</small></div>
         <div><span>03</span><small>GARMENTS<br />REMEMBERED</small></div>
@@ -458,12 +539,19 @@ function BottomNav({ current, onNavigate }: { current: Tab; onNavigate: (tab: Ta
 }
 
 function ConceptAsset({ view }: { view: Exclude<SiteView, "app"> }) {
+  const [captionVisible, setCaptionVisible] = useState(true);
   const copy = {
     film: { eyebrow: "THE FILM", title: "See the system in motion.", note: "A private fit profile moving from garment tap to trusted verdict." },
     model: { eyebrow: "THE HOLDER", title: "Personal, never exposed.", note: "The body stays human. The data stays private." },
     airtag: { eyebrow: "THE TAP", title: "Fit trust at the garment.", note: "A familiar physical gesture unlocks an anonymous fit check." },
     wallet: { eyebrow: "THE PASS", title: "Your verdict, in your wallet.", note: "Carry the answer—not the measurements." },
   }[view];
+
+  useEffect(() => {
+    setCaptionVisible(true);
+    const timer = window.setTimeout(() => setCaptionVisible(false), 3800);
+    return () => window.clearTimeout(timer);
+  }, [view]);
 
   return (
     <motion.figure
@@ -497,11 +585,20 @@ function ConceptAsset({ view }: { view: Exclude<SiteView, "app"> }) {
           }
         />
       )}
-      <figcaption>
-        <span>{copy.eyebrow}</span>
-        <strong>{copy.title}</strong>
-        <p>{copy.note}</p>
-      </figcaption>
+      <AnimatePresence>
+        {captionVisible && (
+          <motion.figcaption
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: .55, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <span>{copy.eyebrow}</span>
+            <strong>{copy.title}</strong>
+            <p>{copy.note}</p>
+          </motion.figcaption>
+        )}
+      </AnimatePresence>
     </motion.figure>
   );
 }
@@ -533,7 +630,7 @@ export default function HomePage() {
       <aside className="desktop-context" aria-hidden="true">
         <span>FIT CHECK · PRIVATE FIT</span>
         <h2>A verdict.<br />Not your body.</h2>
-        <p>Anonymous fit trust for people built like you.</p>
+        <p>Custom fit shouldn&apos;t be a luxury. Bring the confidence of tailoring to every rack—without exposing your body.</p>
       </aside>
       <section className="website-experience">
         <nav className="website-tabs" aria-label="Explore Fit Check">
