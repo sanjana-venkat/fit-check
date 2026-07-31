@@ -2,590 +2,375 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowLeft,
-  ArrowRight,
   Check,
   ChevronRight,
-  Heart,
-  Home,
   LockKeyhole,
-  RotateCcw,
   ScanLine,
-  ShieldCheck,
   Shirt,
-  ShoppingBag,
-  Sparkles,
   UserRound,
   WalletCards,
-  X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-type Screen =
-  | "welcome"
-  | "privacy"
-  | "bodyScan"
-  | "profile"
-  | "garmentScan"
-  | "result"
-  | "compare"
-  | "closet";
-type Size = "S" | "M" | "L";
+type Tab = "fit" | "scan" | "closet" | "profile";
 
-const fitData: Record<
-  Size,
-  {
-    title: string;
-    subtitle: string;
-    confidence: number;
-    note: string;
-    areas: { label: string; value: string; tone: "good" | "watch" }[];
-  }
-> = {
-  S: {
-    title: "Close fit, two watchouts",
-    subtitle: "Better at the waist",
-    confidence: 76,
-    note: "The waist is sharper, but the shoulders and chest may restrict movement.",
-    areas: [
-      { label: "Shoulders", value: "Too snug", tone: "watch" },
-      { label: "Chest", value: "Fitted", tone: "watch" },
-      { label: "Sleeves", value: "Perfect", tone: "good" },
-      { label: "Waist", value: "Tailored", tone: "good" },
-    ],
-  },
-  M: {
-    title: "Good fit, with one watchout",
-    subtitle: "Best overall fit",
-    confidence: 92,
-    note: "Size S would fit closer at the waist but may feel tight at the shoulders.",
-    areas: [
-      { label: "Shoulders", value: "Perfect", tone: "good" },
-      { label: "Chest", value: "Comfortable", tone: "good" },
-      { label: "Sleeves", value: "1.2 in long", tone: "watch" },
-      { label: "Waist", value: "Relaxed", tone: "good" },
-    ],
-  },
-  L: {
-    title: "Roomy through the body",
-    subtitle: "Too loose overall",
-    confidence: 68,
-    note: "The extra room changes the jacket’s intended structure through the chest and waist.",
-    areas: [
-      { label: "Shoulders", value: "Slightly wide", tone: "watch" },
-      { label: "Chest", value: "Loose", tone: "watch" },
-      { label: "Sleeves", value: "2 in long", tone: "watch" },
-      { label: "Waist", value: "Very relaxed", tone: "good" },
-    ],
-  },
+const screenMotion = {
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+  transition: { duration: 0.28, ease: "easeOut" as const },
 };
 
-const scanSteps = ["Scanning proportions", "Mapping fit preferences", "Creating Fit Check"];
-const preferences = [
-  "Relaxed around waist",
-  "Fitted at shoulders",
-  "Full-length trousers",
-  "Avoid tight sleeves",
-];
-
-function Brand() {
+function LedgerBar({ label }: { label: string }) {
   return (
-    <div className="brand">
-      <span className="brand-mark">
-        <ScanLine size={15} strokeWidth={2.4} />
-      </span>
-      <span>FIT CHECK</span>
-    </div>
-  );
-}
-
-function BackButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button className="icon-button" onClick={onClick} aria-label="Go back">
-      <ArrowLeft size={19} />
-    </button>
-  );
-}
-
-function PhoneHeader({
-  back,
-  step,
-}: {
-  back?: () => void;
-  step?: string;
-}) {
-  return (
-    <header className="phone-header">
-      {back ? <BackButton onClick={back} /> : <Brand />}
-      {step && <span className="eyebrow">{step}</span>}
-      {back && <span className="header-spacer" />}
+    <header className="ledger-bar">
+      <span>{label}</span>
+      <i />
     </header>
   );
 }
 
-function GarmentImage({ size = "M", mapped = false }: { size?: Size; mapped?: boolean }) {
-  const scale = size === "S" ? 0.91 : size === "L" ? 1.08 : 1;
+function PassCard({ onTap }: { onTap: () => void }) {
   return (
-    <motion.div
-      className={`garment-visual ${mapped ? "mapped" : ""}`}
-      animate={{ scale }}
-      transition={{ type: "spring", stiffness: 210, damping: 22 }}
-    >
-      <img src="/linen-jacket.png" alt="Structured natural linen jacket" />
-      {mapped && (
-        <>
-          <span className="map-zone shoulders" />
-          <span className="map-zone sleeve" />
-          <span className="map-zone waist" />
-          <span className="map-dot dot-one" />
-          <span className="map-dot dot-two" />
-        </>
-      )}
-    </motion.div>
+    <button className="pass-card" onClick={onTap} aria-label="Tap your Fit Pass">
+      <span className="pass-weave" aria-hidden="true" />
+      <span className="pass-top">
+        <b>FIT PASS</b>
+        <svg width="20" height="20" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M3 9a6 6 0 0 1 12 0M6 9a3 3 0 0 1 6 0" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+          <circle cx="9" cy="9" r="1.1" fill="currentColor" />
+        </svg>
+      </span>
+      <span className="pass-mid">NO NAME · NO NUMBERS · NO PHOTO</span>
+      <span className="pass-bottom">
+        <small>HOLDER</small>
+        <strong>One body, kept private</strong>
+      </span>
+    </button>
   );
 }
 
-function BottomNav({
-  current,
-  onNavigate,
+function Blazer({ annotate = false }: { annotate?: boolean }) {
+  return (
+    <svg className="blazer" viewBox="0 0 260 300" fill="none" aria-label="Line drawing of an unstructured blazer">
+      <g stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path className="draw d1" d="M96 38 L130 52 L164 38 L196 56 L206 118 L196 124 L190 96 L192 262 L130 272 L68 262 L70 96 L64 124 L54 118 L64 56 Z" />
+        <path className="draw d2" d="M130 52 L112 84 L128 210 M130 52 L148 84 L132 210" />
+        <path className="draw d3" d="M64 56 L38 150 L54 232 L74 228 L70 150" />
+        <path className="draw d3" d="M196 56 L222 150 L206 232 L186 228 L190 150" />
+        <path className="draw d4" d="M84 200 L112 202 M148 202 L176 200" />
+        <circle className="pop p1" cx="130" cy="170" r="2.4" fill="currentColor" stroke="none" />
+        <circle className="pop p2" cx="130" cy="192" r="2.4" fill="currentColor" stroke="none" />
+      </g>
+      {annotate && (
+        <g fontFamily="'IBM Plex Mono', monospace" fontSize="9" letterSpacing=".06em">
+          <g className="chalk c1">
+            <path d="M96 38 C120 26, 140 26, 164 38" stroke="currentColor" strokeWidth="1" strokeDasharray="3 4" />
+            <line x1="130" y1="24" x2="130" y2="8" stroke="currentColor" strokeWidth=".8" strokeDasharray="2 3" />
+            <text x="136" y="14" fill="currentColor">SHOULDER · TRUE</text>
+          </g>
+          <g className="chalk warning c2">
+            <path d="M70 240 C100 252, 160 252, 190 240" stroke="currentColor" strokeWidth="1.1" strokeDasharray="3 4" />
+            <line x1="190" y1="244" x2="216" y2="254" stroke="currentColor" strokeWidth=".8" strokeDasharray="2 3" />
+            <text x="152" y="290" fill="currentColor">HIP · −1.2 IN</text>
+          </g>
+          <g className="chalk warning c3">
+            <line x1="54" y1="232" x2="54" y2="252" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+            <line x1="46" y1="252" x2="62" y2="252" stroke="currentColor" strokeWidth="1" />
+            <text x="10" y="268" fill="currentColor">SLEEVE +1.5</text>
+          </g>
+        </g>
+      )}
+    </svg>
+  );
+}
+
+function Figure({ delay }: { delay: number }) {
+  return (
+    <motion.svg
+      className="peer-figure"
+      viewBox="0 0 60 110"
+      fill="none"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay }}
+      aria-hidden="true"
+    >
+      <g stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+        <circle cx="30" cy="16" r="9" />
+        <path d="M30 25 C18 34,16 52,20 70 M30 25 C42 34,44 52,40 70 M20 70 L22 102 M40 70 L38 102 M20 40 L8 58 M40 40 L52 58" />
+      </g>
+      <g className="figure-check">
+        <circle cx="48" cy="12" r="8" />
+        <path d="M44 12 L47 15 L52 8.5" />
+      </g>
+    </motion.svg>
+  );
+}
+
+function PrimaryButton({
+  children,
+  onClick,
+  disabled = false,
 }: {
-  current: Screen;
-  onNavigate: (screen: Screen) => void;
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
 }) {
+  return (
+    <button className="ledger-cta" disabled={disabled} onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+
+function PassHome({ onScan }: { onScan: () => void }) {
+  return (
+    <motion.section className="screen ledger-pane with-nav" {...screenMotion}>
+      <LedgerBar label="FIT PASS" />
+      <h1 className="tailor-voice">Sizes lie.<br />Your pass doesn&apos;t.</h1>
+      <PassCard onTap={onScan} />
+      <p className="tap-hint">TAP YOUR PASS TO A GARMENT</p>
+      <PrimaryButton onClick={onScan}>Tap a garment</PrimaryButton>
+    </motion.section>
+  );
+}
+
+function ScanFlow({ onDone }: { onDone: () => void }) {
+  const [step, setStep] = useState(0);
+  const [shareOn, setShareOn] = useState(true);
+  const [shared, setShared] = useState(false);
+  const reduced = useRef(false);
+
+  useEffect(() => {
+    reduced.current = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
+  }, []);
+
+  useEffect(() => {
+    if (step !== 1) return;
+    const timer = window.setTimeout(() => setStep(2), reduced.current ? 500 : 2400);
+    return () => window.clearTimeout(timer);
+  }, [step]);
+
+  const restart = () => {
+    setShared(false);
+    setShareOn(true);
+    setStep(0);
+  };
+
+  return (
+    <motion.section className="screen scan-flow" {...screenMotion}>
+      <AnimatePresence mode="wait">
+        {step === 0 && (
+          <motion.div key="pass" className="ledger-pane" {...screenMotion}>
+            <LedgerBar label="FIT PASS" />
+            <h1 className="tailor-voice">Sizes lie.<br />Your pass doesn&apos;t.</h1>
+            <PassCard onTap={() => setStep(1)} />
+            <p className="tap-hint">TAP YOUR PASS TO A GARMENT</p>
+            <PrimaryButton onClick={() => setStep(1)}>Tap a garment</PrimaryButton>
+          </motion.div>
+        )}
+
+        {step === 1 && (
+          <motion.div key="reading" className="ledger-pane reading-pane" {...screenMotion}>
+            <LedgerBar label="READING GARMENT" />
+            <div className="garment-art reading"><Blazer /></div>
+            <p className="mono-detail">UNSTRUCTURED BLAZER · WOOL 96%</p>
+            <p className="tailor-small">Held against a body it never sees.</p>
+          </motion.div>
+        )}
+
+        {step === 2 && (
+          <motion.div key="verdict" className="ledger-pane" {...screenMotion}>
+            <LedgerBar label="THE VERDICT" />
+            <div className="garment-art verdict-art"><Blazer annotate /></div>
+            <div className="verdict-copy">
+              <p>Fits your shoulders.</p>
+              <p>Tight at the hips.</p>
+              <p>Sleeves run 1.5 in long.</p>
+              <strong>Best size — M, altered at the waist.</strong>
+            </div>
+            <PrimaryButton onClick={() => setStep(3)}>Who else has worn this?</PrimaryButton>
+          </motion.div>
+        )}
+
+        {step === 3 && (
+          <motion.div key="vouch" className="ledger-pane" {...screenMotion}>
+            <LedgerBar label="THE VOUCH" />
+            <h1 className="tailor-voice vouch-title">Three bodies like yours have worn this.</h1>
+            <div className="figures">
+              <Figure delay={0.15} />
+              <Figure delay={0.34} />
+              <Figure delay={0.53} />
+            </div>
+            <p className="agree-line"><Check size={14} /> TRUE TO SIZE · 3 OF 3 AGREE</p>
+            <p className="privacy-line">No measurements were shared.<br />Not yours. Not theirs.</p>
+            <PrimaryButton onClick={() => setStep(4)}>Decide what the store learns</PrimaryButton>
+          </motion.div>
+        )}
+
+        {step === 4 && !shared && (
+          <motion.div key="terms" className="ledger-pane" {...screenMotion}>
+            <LedgerBar label="YOUR TERMS" />
+            <h1 className="tailor-voice terms-title">The store learns one word.</h1>
+            <div className="privacy-rows">
+              <div className="privacy-row">
+                <span>
+                  <strong>Fits / does not fit</strong>
+                  <small>A SINGLE ANSWER. NOTHING MORE.</small>
+                </span>
+                <button
+                  className={`privacy-toggle ${shareOn ? "on" : ""}`}
+                  onClick={() => setShareOn((value) => !value)}
+                  role="switch"
+                  aria-checked={shareOn}
+                  aria-label="Share only the fit verdict"
+                >
+                  <i />
+                </button>
+              </div>
+              <div className="privacy-row">
+                <span>
+                  <strong>Everything else</strong>
+                  <small className="locked-copy">NEVER LEAVES YOUR PASS</small>
+                </span>
+                <LockKeyhole size={22} />
+              </div>
+            </div>
+            <PrimaryButton disabled={!shareOn} onClick={() => setShared(true)}>
+              {shareOn ? "Share the verdict" : "Sharing is off"}
+            </PrimaryButton>
+            <p className="tap-hint final-hint">YOUR BODY IS NOT FOR SALE.</p>
+          </motion.div>
+        )}
+
+        {step === 4 && shared && (
+          <motion.div key="shared" className="ledger-pane shared-pane" {...screenMotion}>
+            <LedgerBar label="DONE" />
+            <div className="verdict-stamp">
+              <span>FITS</span>
+              <small>M · ALTERED</small>
+            </div>
+            <p className="shared-title">The verdict was shared.</p>
+            <p className="privacy-line">Nothing else was.</p>
+            <PrimaryButton onClick={restart}>Tap another garment</PrimaryButton>
+            <button className="quiet-exit" onClick={onDone}>Return to Fit Check</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.section>
+  );
+}
+
+function Closet() {
   const items = [
-    { label: "Fit Check", icon: WalletCards, screen: "profile" as Screen },
-    { label: "Scan", icon: ScanLine, screen: "garmentScan" as Screen, primary: true },
-    { label: "Closet", icon: Shirt, screen: "closet" as Screen },
-    { label: "Profile", icon: UserRound, screen: "profile" as Screen },
+    { name: "Unstructured blazer", brand: "North Studio", fit: "M · altered", status: "Best fit" },
+    { name: "Wide-leg trousers", brand: "Atelier West", fit: "S · hemmed", status: "Good fit" },
+    { name: "Rib-knit top", brand: "Morrow", fit: "M", status: "Size up" },
+  ];
+  return (
+    <motion.section className="screen simple-page with-nav" {...screenMotion}>
+      <LedgerBar label="THE CLOSET" />
+      <h1 className="tailor-voice">Fits worth<br />remembering.</h1>
+      <div className="closet-list-clean">
+        {items.map((item, index) => (
+          <button key={item.name}>
+            <span className="closet-index">0{index + 1}</span>
+            <span>
+              <small>{item.brand}</small>
+              <strong>{item.name}</strong>
+              <em>{item.fit}</em>
+            </span>
+            <span className={`fit-status ${index < 2 ? "good" : ""}`}>{item.status}</span>
+            <ChevronRight size={17} />
+          </button>
+        ))}
+      </div>
+      <p className="page-note">Only verdicts are saved here.<br />Measurements stay on your pass.</p>
+    </motion.section>
+  );
+}
+
+function Profile() {
+  return (
+    <motion.section className="screen simple-page with-nav" {...screenMotion}>
+      <LedgerBar label="YOUR PASS" />
+      <h1 className="tailor-voice">One body,<br />kept private.</h1>
+      <div className="profile-pass">
+        <span className="profile-monogram">A</span>
+        <span>
+          <small>PRIVATE FIT PROFILE</small>
+          <strong>Balanced · relaxed</strong>
+        </span>
+        <span className="active-mark"><i /> ACTIVE</span>
+      </div>
+      <div className="profile-facts">
+        <div><span>18</span><small>ANONYMOUS<br />BODY MATCHES</small></div>
+        <div><span>03</span><small>GARMENTS<br />REMEMBERED</small></div>
+      </div>
+      <div className="profile-rule">
+        <LockKeyhole size={19} />
+        <span><strong>Your measurements never leave this device.</strong><small>Stores receive only the verdict you approve.</small></span>
+      </div>
+    </motion.section>
+  );
+}
+
+function BottomNav({ current, onNavigate }: { current: Tab; onNavigate: (tab: Tab) => void }) {
+  const items = [
+    { label: "Fit Check", icon: WalletCards, tab: "fit" as Tab },
+    { label: "Scan", icon: ScanLine, tab: "scan" as Tab, primary: true },
+    { label: "Closet", icon: Shirt, tab: "closet" as Tab },
+    { label: "Profile", icon: UserRound, tab: "profile" as Tab },
   ];
   return (
     <nav className="bottom-nav" aria-label="Main navigation">
-      {items.map((item) => {
-        const active =
-          current === item.screen ||
-          (item.label === "Scan" && ["garmentScan", "result", "compare"].includes(current));
-        const Icon = item.icon;
-        return (
-          <button
-            key={item.label}
-            className={`${active ? "active" : ""} ${item.primary ? "scan-nav" : ""}`}
-            onClick={() => onNavigate(item.screen)}
-          >
-            <span><Icon size={item.primary ? 22 : 20} /></span>
-            <small>{item.label}</small>
-          </button>
-        );
-      })}
+      {items.map(({ label, icon: Icon, tab, primary }) => (
+        <button
+          key={tab}
+          className={`${current === tab ? "active" : ""} ${primary ? "scan-tab" : ""}`}
+          onClick={() => onNavigate(tab)}
+          aria-current={current === tab ? "page" : undefined}
+        >
+          <span><Icon size={primary ? 21 : 19} strokeWidth={1.8} /></span>
+          <small>{label}</small>
+        </button>
+      ))}
     </nav>
   );
 }
 
-function Welcome({ onNext, onDemo }: { onNext: () => void; onDemo: () => void }) {
-  return (
-    <motion.section className="screen welcome-screen" {...screenMotion}>
-      <div className="welcome-top"><Brand /><span className="private-badge"><LockKeyhole size={12} /> Private by design</span></div>
-      <div className="label-orbit" aria-label="Sizes S, M, 6, 8, and 28 become one personal Fit Check">
-        {["S", "M", "6", "8", "28"].map((label, index) => (
-          <motion.span
-            key={label}
-            className={`size-label label-${index + 1}`}
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.15 + index * 0.09, type: "spring" }}
-          >
-            {label}
-          </motion.span>
-        ))}
-        <motion.div
-          className="pass-token"
-          initial={{ x: "-50%", y: "-50%" }}
-          animate={{ x: "-50%", y: "-50%", rotate: [0, 2, 0] }}
-          transition={{ duration: 4, repeat: Infinity }}
-        >
-          <div className="token-top"><Brand /><ShieldCheck size={20} /></div>
-          <div className="body-glyph"><span /><i /><b /></div>
-          <div><small>PERSONAL FIT PROFILE</small><strong>ONE FIT, EVERY BRAND</strong></div>
-        </motion.div>
-      </div>
-      <div className="welcome-copy">
-        <span className="eyebrow accent">ONE PROFILE · EVERY BRAND</span>
-        <h1>Your size changes.<br />Your body doesn’t.</h1>
-        <p>Create one private Fit Check and use it across every brand.</p>
-        <div className="peer-proof"><span><UserRound size={13} /></span> Fit signals from people built like you—never their bodies.</div>
-      </div>
-      <div className="action-stack">
-        <button className="button primary" onClick={onNext}>Create my Fit Check <ArrowRight size={18} /></button>
-        <button className="button text-button" onClick={onDemo}>Try demo <Sparkles size={15} /></button>
-      </div>
-    </motion.section>
-  );
-}
-
-function Privacy({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
-  const points = [
-    ["Stored privately", "Your body profile stays encrypted on this device.", LockKeyhole],
-    ["Matched without exposure", "Compare fit signals, never bodies or measurements.", ScanLine],
-    ["Revoke access anytime", "You stay in control of every connection.", RotateCcw],
-  ] as const;
-  return (
-    <motion.section className="screen" {...screenMotion}>
-      <PhoneHeader back={onBack} step="01 / 03" />
-      <div className="privacy-hero">
-        <div className="privacy-orb"><ShieldCheck size={42} /><span /></div>
-        <span className="eyebrow accent">PRIVATE BY DEFAULT</span>
-        <h2>Your measurements<br />stay with you.</h2>
-        <p>Stores only receive the result they need. Anonymous fit matching finds people built like you without revealing anyone’s body.</p>
-      </div>
-      <div className="privacy-points">
-        {points.map(([title, copy, Icon]) => (
-          <div className="privacy-row" key={title}>
-            <span className="point-icon"><Icon size={18} /></span>
-            <div><strong>{title}</strong><p>{copy}</p></div>
-            <Check size={16} className="point-check" />
-          </div>
-        ))}
-      </div>
-      <button className="button primary bottom-action" onClick={onNext}>Continue <ArrowRight size={18} /></button>
-    </motion.section>
-  );
-}
-
-function BodyScan({ onDone, onBack }: { onDone: () => void; onBack: () => void }) {
-  const [phase, setPhase] = useState(0);
-  useEffect(() => {
-    if (phase >= 4) return;
-    const timer = window.setTimeout(() => setPhase((p) => p + 1), phase === 0 ? 850 : 1050);
-    return () => window.clearTimeout(timer);
-  }, [phase]);
-  const ready = phase >= 4;
-  return (
-    <motion.section className="screen scan-screen" {...screenMotion}>
-      <PhoneHeader back={onBack} step="02 / 03" />
-      <div className="scan-copy">
-        <span className="eyebrow accent">{ready ? "SCAN COMPLETE" : "BODY SCAN"}</span>
-        <h2>{ready ? "Your Fit Check is ready" : "Let’s map how clothes fit you."}</h2>
-        <p>{ready ? "Your private fit profile was created on this device." : "Move naturally. This is about proportion and preference—not a number."}</p>
-      </div>
-      <div className={`scan-stage ${ready ? "complete" : ""}`}>
-        <div className="scan-corners"><i /><i /><i /><i /></div>
-        <div className="scan-figure">
-          <span className="figure-head" />
-          <span className="figure-body" />
-          <span className="figure-leg left" />
-          <span className="figure-leg right" />
-        </div>
-        {!ready && <motion.div className="scan-line" animate={{ top: ["14%", "83%", "14%"] }} transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }} />}
-        {ready && <motion.div className="ready-check" initial={{ scale: 0 }} animate={{ scale: 1 }}><Check size={28} /></motion.div>}
-        <div className="scan-progress">
-          {scanSteps.map((step, index) => (
-            <div className={phase > index ? "done" : phase === index + 1 ? "active" : ""} key={step}>
-              <span>{phase > index + 1 || ready ? <Check size={12} /> : index + 1}</span>{step}
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="instruction-row">
-        <span>6 ft away</span><span>Turn slowly</span><span>Fitted clothing</span>
-      </div>
-      <button className="button primary bottom-action" disabled={!ready} onClick={onDone}>
-        View my Fit Check <ArrowRight size={18} />
-      </button>
-    </motion.section>
-  );
-}
-
-function Profile({ onScan }: { onScan: () => void }) {
-  const [selected, setSelected] = useState(preferences);
-  const toggle = (item: string) =>
-    setSelected((current) => current.includes(item) ? current.filter((x) => x !== item) : [...current, item]);
-  return (
-    <motion.section className="screen content-screen" {...screenMotion}>
-      <div className="profile-header"><Brand /><button className="avatar" aria-label="Profile">A</button></div>
-      <div className="profile-intro">
-        <span className="eyebrow accent">YOUR FIT CHECK</span>
-        <h2>Made for how<br />you like to dress.</h2>
-      </div>
-      <div className="profile-card">
-        <div className="mini-body"><span /><i /><b /></div>
-        <div className="profile-card-copy"><small>PRIVATE FIT PROFILE</small><strong>Balanced · Relaxed</strong><p>18 anonymous body-similarity matches</p></div>
-        <span className="live-pill"><i /> ACTIVE</span>
-      </div>
-      <div className="section-heading"><div><span className="eyebrow">FIT PREFERENCES</span><p>Tap to adjust</p></div></div>
-      <div className="chip-grid">
-        {preferences.map((item) => (
-          <button key={item} className={selected.includes(item) ? "selected" : ""} onClick={() => toggle(item)}>
-            {selected.includes(item) && <Check size={14} />}{item}
-          </button>
-        ))}
-      </div>
-      <div className="share-card">
-        <span><ShieldCheck size={20} /></span>
-        <div><strong>Only fit results are shared</strong><p>Your measurements never leave this device.</p></div>
-        <ChevronRight size={18} />
-      </div>
-      <button className="button primary" onClick={onScan}><ScanLine size={18} /> Scan a garment</button>
-    </motion.section>
-  );
-}
-
-function GarmentScan({ onComplete }: { onComplete: () => void }) {
-  const [progress, setProgress] = useState(0);
-  const [complete, setComplete] = useState(false);
-  const timer = useRef<number | null>(null);
-  const start = () => {
-    if (complete) return;
-    const started = Date.now();
-    timer.current = window.setInterval(() => {
-      const next = Math.min(100, ((Date.now() - started) / 1300) * 100);
-      setProgress(next);
-      if (next >= 100) {
-        if (timer.current) window.clearInterval(timer.current);
-        setComplete(true);
-        window.setTimeout(onComplete, 850);
-      }
-    }, 30);
-  };
-  const stop = () => {
-    if (timer.current) window.clearInterval(timer.current);
-    if (!complete) setProgress(0);
-  };
-  useEffect(() => () => { if (timer.current) window.clearInterval(timer.current); }, []);
-  return (
-    <motion.section className={`screen garment-scan-screen ${complete ? "success" : ""}`} {...screenMotion}>
-      <div className="scan-ledger-bar">
-        <span className="eyebrow">FIT CHECK · THE TAP</span>
-        <span />
-        <small>{complete ? "READ" : "READY"}</small>
-      </div>
-      <div className="scan-ledger-copy">
-        <h2>{complete ? "Held against a body it never sees." : "Tap the tag.\nKnow the fit."}</h2>
-        <p>{complete ? "Your private profile is comparing proportion, preference, and anonymous fit signals." : "Hold the garment tag near your phone. No measurements leave your Fit Check."}</p>
-      </div>
-      <div className="ledger-stage">
-        <motion.div
-          className="ledger-tag"
-          animate={complete ? { x: 118, y: 112, rotate: 6, scale: 0.5, opacity: 0 } : { y: [0, -5, 0], rotate: [-2, 0, -2] }}
-          transition={{ duration: complete ? 0.55 : 2.2, repeat: complete ? 0 : Infinity, ease: "easeInOut" }}
-        >
-          <div><span>NORTH STUDIO</span><b>M</b></div>
-          <small>STRUCTURED LINEN JACKET</small>
-        </motion.div>
-        <div className={`ledger-garment ${progress > 0 ? "reading" : ""}`}>
-          <GarmentImage />
-          <motion.span
-            className="ledger-scan-line"
-            animate={progress > 0 && !complete ? { top: ["18%", "76%", "18%"] } : { top: "18%" }}
-            transition={{ duration: 1.35, repeat: progress > 0 && !complete ? Infinity : 0, ease: "easeInOut" }}
-          />
-          <AnimatePresence>
-            {complete && (
-              <motion.div className="read-stamp" initial={{ opacity: 0, scale: 1.25, rotate: -8 }} animate={{ opacity: 1, scale: 1, rotate: -4 }}>
-                GARMENT<br />READ
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-        <div className="ledger-transfer" aria-hidden="true"><i /><i /><i /></div>
-        <div className="ledger-readout">
-          <span>{complete ? "MATCHING FIT PROFILE" : progress > 0 ? "READING GARMENT" : "NFC READY"}</span>
-          <strong>{complete ? "Private comparison in progress" : "No name · No numbers · No photo"}</strong>
-        </div>
-      </div>
-      <button
-        className={`hold-button ${progress > 0 ? "holding" : ""}`}
-        style={{ "--hold": `${progress}%` } as React.CSSProperties}
-        onPointerDown={start}
-        onPointerUp={stop}
-        onPointerLeave={stop}
-        onKeyDown={(e) => { if (e.key === " " || e.key === "Enter") start(); }}
-        onKeyUp={stop}
-      >
-        <span><ScanLine size={18} /></span>{complete ? "Garment received" : "Press & hold to tap garment"}
-      </button>
-      <small className="hold-hint">{complete ? "Nothing but the fit result is shared" : "Hold until the reading completes"}</small>
-    </motion.section>
-  );
-}
-
-function FitResult({
-  size,
-  onSize,
-  onCompare,
-  onSave,
-}: {
-  size: Size;
-  onSize: (size: Size) => void;
-  onCompare: () => void;
-  onSave: () => void;
-}) {
-  const data = fitData[size];
-  const [added, setAdded] = useState(false);
-  return (
-    <motion.section className="screen result-screen" {...screenMotion}>
-      <PhoneHeader step="FIT RESULT" />
-      <div className="result-head">
-        <div><span className="eyebrow accent">NORTH STUDIO</span><h2>{data.title}</h2></div>
-        <div className="confidence"><strong>{data.confidence}%</strong><small>CONFIDENCE</small></div>
-      </div>
-      <div className="result-visual">
-        <div className="garment-backdrop"><span className="body-outline" /><GarmentImage size={size} mapped /></div>
-        <div className="size-switcher">
-          {(["S", "M", "L"] as Size[]).map((item) => (
-            <button className={size === item ? "active" : ""} onClick={() => onSize(item)} key={item}>{item}</button>
-          ))}
-        </div>
-        <span className="product-caption">Structured Linen Jacket · Size {size}</span>
-      </div>
-      <div className="recommendation">
-        <span><Check size={15} /></span><div><small>RECOMMENDED</small><strong>Size M</strong></div>
-      </div>
-      <div className="peer-result">
-        <div className="peer-avatars"><span>A</span><span>N</span><span>J</span></div>
-        <div><small>PRIVATE FIT CIRCLE</small><strong>3 people built like you kept size {size}</strong><p>Anonymous match · no measurements shared</p></div>
-        <ShieldCheck size={18} />
-      </div>
-      <div className="fit-areas">
-        {data.areas.map((area) => (
-          <div key={area.label}><span>{area.label}</span><strong className={area.tone}>{area.value}</strong></div>
-        ))}
-      </div>
-      <p className="size-insight">{data.note}</p>
-      <div className="result-actions">
-        <button className="button secondary" onClick={onCompare}>Compare sizes</button>
-        <button className="button icon-action" onClick={onSave} aria-label="Save this fit"><Heart size={19} /></button>
-        <button className="button primary cart-button" onClick={() => setAdded(true)}>
-          {added ? <><Check size={18} /> Added</> : <><ShoppingBag size={18} /> Add to cart</>}
-        </button>
-      </div>
-    </motion.section>
-  );
-}
-
-function Compare({ selected, onSelect, onBack }: { selected: Size; onSelect: (size: Size) => void; onBack: () => void }) {
-  const summaries = {
-    S: ["Better at waist", "Tight at shoulders"],
-    M: ["Best overall fit", "Balanced everywhere"],
-    L: ["Roomy silhouette", "Loose through body"],
-  };
-  return (
-    <motion.section className="screen content-screen compare-screen" {...screenMotion}>
-      <PhoneHeader back={onBack} step="COMPARE FIT" />
-      <div className="compare-head"><span className="eyebrow accent">STRUCTURED LINEN JACKET</span><h2>Three sizes.<br />One clear choice.</h2><p>See how each size changes the silhouette—not your body.</p></div>
-      <div className="compare-cards">
-        {(["S", "M", "L"] as Size[]).map((size) => (
-          <button key={size} className={`${selected === size ? "selected" : ""} ${size === "M" ? "recommended" : ""}`} onClick={() => onSelect(size)}>
-            {size === "M" && <span className="recommend-tab">BEST FIT</span>}
-            <div className="compare-visual"><GarmentImage size={size} /></div>
-            <div className="compare-label"><strong>{size}</strong><span>{fitData[size].confidence}%</span></div>
-            <p>{summaries[size][0]}</p><small>{summaries[size][1]}</small>
-            <i>{selected === size && <Check size={14} />}</i>
-          </button>
-        ))}
-      </div>
-      <div className="comparison-summary">
-        <div className="summary-score"><strong>{fitData[selected].confidence}</strong><span>%<br /><small>FIT MATCH</small></span></div>
-        <div><small>SIZE {selected} · {selected === "M" ? "3 PEER MATCHES" : "1 PEER MATCH"}</small><strong>{fitData[selected].subtitle}</strong><p>{fitData[selected].note}</p></div>
-      </div>
-      <button className="button primary" onClick={onBack}>Choose size {selected} <ArrowRight size={18} /></button>
-    </motion.section>
-  );
-}
-
-function Closet({ onOpen }: { onOpen: () => void }) {
-  const items = [
-    ["Linen Jacket", "North Studio", "Best fit", "best"],
-    ["Wide-leg Trousers", "Atelier West", "Needs hemming", "watch"],
-    ["Rib Knit Top", "Morrow", "Tight at arms", "watch"],
-    ["Running Shoes", "Vela", "Size up", "neutral"],
-  ];
-  return (
-    <motion.section className="screen content-screen closet-screen" {...screenMotion}>
-      <div className="profile-header"><Brand /><button className="icon-button"><Heart size={18} /></button></div>
-      <div className="closet-head"><span className="eyebrow accent">SAVED CLOSET</span><h2>Your fits,<br />remembered.</h2><p>Four pieces scanned across three brands.</p></div>
-      <div className="closet-list">
-        {items.map(([name, brand, fit, tone], index) => (
-          <button key={name} onClick={index === 0 ? onOpen : undefined}>
-            <div className={`closet-thumb thumb-${index}`}>{index === 0 ? <img src="/linen-jacket.png" alt="" /> : <Shirt size={26} />}</div>
-            <div><small>{brand}</small><strong>{name}</strong><span className={tone}>{fit}</span></div>
-            <ChevronRight size={18} />
-          </button>
-        ))}
-      </div>
-      <div className="closet-note"><Sparkles size={18} /><p>Your Fit Check gets more useful as you save what works.</p></div>
-    </motion.section>
-  );
-}
-
-const screenMotion = {
-  initial: { opacity: 0, y: 18 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -12 },
-  transition: { duration: 0.32, ease: "easeOut" as const },
-};
-
 export default function HomePage() {
-  const [screen, setScreen] = useState<Screen>("welcome");
-  const [size, setSize] = useState<Size>("M");
-  const [saved, setSaved] = useState(false);
-  const [toast, setToast] = useState("");
+  const [tab, setTab] = useState<Tab>("fit");
 
   useEffect(() => {
-    const state = window.localStorage.getItem("fit-check-demo");
-    if (state) {
-      try {
-        const parsed = JSON.parse(state);
-        setScreen(parsed.screen ?? "welcome");
-        setSize(parsed.size ?? "M");
-        setSaved(Boolean(parsed.saved));
-      } catch {}
-    }
+    const saved = window.localStorage.getItem("fit-check-tab") as Tab | null;
+    if (saved && ["fit", "closet", "profile"].includes(saved)) setTab(saved);
   }, []);
-  useEffect(() => {
-    window.localStorage.setItem("fit-check-demo", JSON.stringify({ screen, size, saved }));
-  }, [screen, size, saved]);
-  const navigate = (next: Screen) => {
-    setScreen(next);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+  const navigate = (next: Tab) => {
+    setTab(next);
+    if (next !== "scan") window.localStorage.setItem("fit-check-tab", next);
   };
-  const showToast = (message: string) => {
-    setToast(message);
-    window.setTimeout(() => setToast(""), 2200);
-  };
-  const saveFit = () => {
-    setSaved(true);
-    showToast("Saved to your closet");
-  };
-  const demo = () => {
-    setSize("M");
-    navigate("garmentScan");
-  };
-  const showNav = ["profile", "garmentScan", "result", "compare", "closet"].includes(screen);
 
   return (
     <main className="app-shell">
-      <div className="desktop-context" aria-hidden="true">
-        <span className="eyebrow">FIT CHECK / PROTOTYPE 01</span>
-        <h3>Tap the tag.<br />Know the fit.</h3>
-        <p>A private fit profile for every brand.</p>
-        <div className="context-line"><span /> Powered by your body, not a size chart.</div>
-      </div>
+      <aside className="desktop-context" aria-hidden="true">
+        <span>FIT CHECK · PRIVATE FIT</span>
+        <h2>A verdict.<br />Not your body.</h2>
+        <p>Anonymous fit trust for people built like you.</p>
+      </aside>
       <div className="phone-shell">
+        <span className="phone-notch" aria-hidden="true" />
         <AnimatePresence mode="wait">
-          {screen === "welcome" && <Welcome key="welcome" onNext={() => navigate("privacy")} onDemo={demo} />}
-          {screen === "privacy" && <Privacy key="privacy" onBack={() => navigate("welcome")} onNext={() => navigate("bodyScan")} />}
-          {screen === "bodyScan" && <BodyScan key="bodyScan" onBack={() => navigate("privacy")} onDone={() => navigate("profile")} />}
-          {screen === "profile" && <Profile key="profile" onScan={() => navigate("garmentScan")} />}
-          {screen === "garmentScan" && <GarmentScan key="garmentScan" onComplete={() => navigate("result")} />}
-          {screen === "result" && <FitResult key="result" size={size} onSize={setSize} onCompare={() => navigate("compare")} onSave={saveFit} />}
-          {screen === "compare" && <Compare key="compare" selected={size} onSelect={setSize} onBack={() => navigate("result")} />}
-          {screen === "closet" && <Closet key="closet" onOpen={() => navigate("result")} />}
+          {tab === "fit" && <PassHome key="fit" onScan={() => navigate("scan")} />}
+          {tab === "scan" && <ScanFlow key="scan" onDone={() => navigate("fit")} />}
+          {tab === "closet" && <Closet key="closet" />}
+          {tab === "profile" && <Profile key="profile" />}
         </AnimatePresence>
-        {showNav && <BottomNav current={screen} onNavigate={navigate} />}
-        <AnimatePresence>
-          {toast && <motion.div className="toast" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}><Check size={16} />{toast}</motion.div>}
-        </AnimatePresence>
+        {tab !== "scan" && <BottomNav current={tab} onNavigate={navigate} />}
+        <span className="phone-home" aria-hidden="true" />
       </div>
-      <button className="reset-demo" onClick={() => { window.localStorage.removeItem("fit-check-demo"); setSaved(false); setSize("M"); navigate("welcome"); }}><RotateCcw size={14} /> Restart demo</button>
     </main>
   );
 }
