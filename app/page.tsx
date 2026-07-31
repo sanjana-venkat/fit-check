@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Check,
   ChevronRight,
+  Heart,
   LockKeyhole,
   ScanLine,
   Shirt,
@@ -401,29 +402,66 @@ function ScanFlow({ onDone, onClose }: { onDone: () => void; onClose: () => void
 }
 
 function Closet() {
-  const items = [
-    { name: "Unstructured blazer", brand: "North Studio", fit: "M · altered", status: "Best fit" },
-    { name: "Wide-leg trousers", brand: "Atelier West", fit: "S · hemmed", status: "Good fit" },
-    { name: "Rib-knit top", brand: "Morrow", fit: "M", status: "Size up" },
+  const [closetTab, setClosetTab] = useState<"inventory" | "favorites">("inventory");
+  const inventory = [
+    { name: "Unstructured blazer", brand: "North Studio", fit: "M · altered", status: "Best fit", favorite: true },
+    { name: "Wide-leg trousers", brand: "Atelier West", fit: "S · hemmed", status: "Good fit", favorite: true },
+    { name: "Rib-knit top", brand: "Morrow", fit: "M", status: "Size up", favorite: false },
+    { name: "Longline coat", brand: "COS", fit: "S · relaxed", status: "Good fit", favorite: false },
+    { name: "Silk column skirt", brand: "Aritzia", fit: "4", status: "Best fit", favorite: true },
   ];
+  const items = closetTab === "favorites" ? inventory.filter((item) => item.favorite) : inventory;
+
   return (
-    <motion.section className="screen simple-page with-nav" {...screenMotion}>
+    <motion.section className="screen simple-page closet-page with-nav" {...screenMotion}>
       <LedgerBar label="THE CLOSET" />
       <h1 className="tailor-voice">Fits worth<br />remembering.</h1>
-      <div className="closet-list-clean">
-        {items.map((item, index) => (
-          <button key={item.name}>
-            <span className="closet-index">0{index + 1}</span>
-            <span>
-              <small>{item.brand}</small>
-              <strong>{item.name}</strong>
-              <em>{item.fit}</em>
-            </span>
-            <span className={`fit-status ${index < 2 ? "good" : ""}`}>{item.status}</span>
-            <ChevronRight size={17} />
-          </button>
-        ))}
+      <div className="closet-summary" aria-label="Closet summary">
+        <span><strong>12</strong> pieces</span>
+        <i />
+        <span><strong>05</strong> proven fits</span>
       </div>
+      <div className="closet-tabs" role="tablist" aria-label="Closet views">
+        <button
+          className={closetTab === "inventory" ? "active" : ""}
+          onClick={() => setClosetTab("inventory")}
+          role="tab"
+          aria-selected={closetTab === "inventory"}
+        >
+          Inventory
+        </button>
+        <button
+          className={closetTab === "favorites" ? "active" : ""}
+          onClick={() => setClosetTab("favorites")}
+          role="tab"
+          aria-selected={closetTab === "favorites"}
+        >
+          <Heart size={12} /> Favorite fits
+        </button>
+      </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={closetTab}
+          className="closet-list-clean"
+          initial={{ opacity: 0, y: 7 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -5 }}
+          transition={{ duration: 0.22 }}
+        >
+          {items.map((item, index) => (
+            <button key={item.name}>
+              <span className="closet-index">0{index + 1}</span>
+              <span>
+                <small>{item.brand}</small>
+                <strong>{item.name}</strong>
+                <em>{item.fit}</em>
+              </span>
+              <span className={`fit-status ${item.status !== "Size up" ? "good" : ""}`}>{item.status}</span>
+              {item.favorite ? <Heart className="favorite-heart" size={15} fill="currentColor" /> : <ChevronRight size={17} />}
+            </button>
+          ))}
+        </motion.div>
+      </AnimatePresence>
       <p className="page-note">Only verdicts are saved here.<br />Measurements stay on your pass.</p>
     </motion.section>
   );

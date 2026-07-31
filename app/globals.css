@@ -614,7 +614,50 @@ button { color: inherit; font: inherit; -webkit-tap-highlight-color: transparent
 
 .simple-page { padding: 48px 26px 108px; }
 .simple-page .tailor-voice { margin-top: 27px; }
-.closet-list-clean { margin-top: 35px; border-top: 1px solid var(--line); }
+.closet-page {
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+}
+.closet-page::-webkit-scrollbar { display: none; }
+.closet-summary {
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 7px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.closet-summary strong { color: var(--ink); font-size: 11px; font-weight: 500; }
+.closet-summary i { width: 1px; height: 16px; background: var(--line); }
+.closet-tabs {
+  margin-top: 18px;
+  padding: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.closet-tabs button {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 9px;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease;
+}
+.closet-tabs button.active { background: var(--ink); color: var(--paper); }
+.closet-list-clean { margin-top: 16px; border-top: 1px solid var(--line); }
 .closet-list-clean button {
   width: 100%;
   min-height: 98px;
@@ -636,7 +679,8 @@ button { color: inherit; font: inherit; -webkit-tap-highlight-color: transparent
 .closet-list-clean em { color: var(--muted); font-size: 9px; font-style: normal; }
 .fit-status { color: var(--muted); font-size: 8px; white-space: nowrap; }
 .fit-status.good { color: var(--sage-dark); }
-.page-note { margin: auto 0 0; color: var(--muted); font-family: "Fraunces", Georgia, serif; font-size: 14px; line-height: 1.45; }
+.favorite-heart { color: var(--sage-dark); }
+.page-note { margin: 28px 0 0; color: var(--muted); font-family: "Fraunces", Georgia, serif; font-size: 14px; line-height: 1.45; }
 
 .profile-pass {
   min-height: 112px;
