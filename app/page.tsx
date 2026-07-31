@@ -549,7 +549,7 @@ function ConceptAsset({ view }: { view: Exclude<SiteView, "app"> }) {
 
   useEffect(() => {
     setCaptionVisible(true);
-    const timer = window.setTimeout(() => setCaptionVisible(false), 3800);
+    const timer = window.setTimeout(() => setCaptionVisible(false), 1000);
     return () => window.clearTimeout(timer);
   }, [view]);
 
@@ -591,7 +591,7 @@ function ConceptAsset({ view }: { view: Exclude<SiteView, "app"> }) {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: .55, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: .3, ease: [0.22, 1, 0.36, 1] }}
           >
             <span>{copy.eyebrow}</span>
             <strong>{copy.title}</strong>
