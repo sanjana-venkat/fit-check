@@ -15,6 +15,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 type Tab = "fit" | "scan" | "closet" | "profile";
+type SiteView = "app" | "film" | "model" | "airtag" | "wallet";
 
 const screenMotion = {
   initial: { opacity: 0, y: 8 },
@@ -135,7 +136,6 @@ function PrimaryButton({
 
 function PassHome({ onScan }: { onScan: () => void }) {
   const [preferences, setPreferences] = useState(["Fitted shoulders", "Relaxed waist"]);
-  const [assetTab, setAssetTab] = useState<"film" | "model" | "airtag" | "wallet">("film");
   const togglePreference = (preference: string) =>
     setPreferences((current) =>
       current.includes(preference)
@@ -197,65 +197,6 @@ function PassHome({ onScan }: { onScan: () => void }) {
           </button>
         </div>
       </div>
-
-      <section className="asset-showcase" aria-label="Fit Pass concept assets">
-        <div className="asset-heading">
-          <span>THE CONCEPT</span>
-          <small>EXPLORE THE SYSTEM</small>
-        </div>
-        <div className="asset-tabs" role="tablist" aria-label="Concept assets">
-          {(["film", "model", "airtag", "wallet"] as const).map((asset) => (
-            <button
-              key={asset}
-              role="tab"
-              aria-selected={assetTab === asset}
-              className={assetTab === asset ? "active" : ""}
-              onClick={() => setAssetTab(asset)}
-            >
-              {asset === "airtag" ? "AirTag" : asset[0].toUpperCase() + asset.slice(1)}
-            </button>
-          ))}
-        </div>
-        <AnimatePresence mode="wait">
-          <motion.figure
-            key={assetTab}
-            className="asset-stage"
-            initial={{ opacity: 0, y: 9, scale: .992 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -6, scale: .996 }}
-            transition={{ duration: .3, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {assetTab === "film" ? (
-              <video
-                src="/fit-pass-film.mp4"
-                poster="/fit-pass-airtag.webp"
-                autoPlay
-                muted
-                loop
-                playsInline
-                aria-label="Fit Pass concept film"
-              />
-            ) : (
-              <img
-                src={`/fit-pass-${assetTab}.webp`}
-                alt={
-                  assetTab === "model"
-                    ? "Fit Pass campaign portrait"
-                    : assetTab === "airtag"
-                      ? "Fit Pass garment tap accessory"
-                      : "Fit Pass Apple Wallet experience"
-                }
-              />
-            )}
-            <figcaption>
-              <span>{assetTab === "film" ? "15 SEC FILM" : assetTab === "model" ? "THE HOLDER" : assetTab === "airtag" ? "THE TAP" : "THE PASS"}</span>
-              <strong>
-                {assetTab === "film" ? "See the system in motion" : assetTab === "model" ? "Personal, never exposed" : assetTab === "airtag" ? "Fit trust at the garment" : "Your verdict, in your wallet"}
-              </strong>
-            </figcaption>
-          </motion.figure>
-        </AnimatePresence>
-      </section>
 
       <div className="home-action">
         <PrimaryButton onClick={onScan}>Start a Fit Check</PrimaryButton>
@@ -516,9 +457,59 @@ function BottomNav({ current, onNavigate }: { current: Tab; onNavigate: (tab: Ta
   );
 }
 
+function ConceptAsset({ view }: { view: Exclude<SiteView, "app"> }) {
+  const copy = {
+    film: { eyebrow: "THE FILM", title: "See the system in motion.", note: "A private fit profile moving from garment tap to trusted verdict." },
+    model: { eyebrow: "THE HOLDER", title: "Personal, never exposed.", note: "The body stays human. The data stays private." },
+    airtag: { eyebrow: "THE TAP", title: "Fit trust at the garment.", note: "A familiar physical gesture unlocks an anonymous fit check." },
+    wallet: { eyebrow: "THE PASS", title: "Your verdict, in your wallet.", note: "Carry the answer—not the measurements." },
+  }[view];
+
+  return (
+    <motion.figure
+      key={view}
+      className="website-asset"
+      initial={{ opacity: 0, y: 12, scale: .992 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -8, scale: .996 }}
+      transition={{ duration: .34, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {view === "film" ? (
+        <video
+          src="/fit-pass-film.mp4"
+          poster="/fit-pass-airtag.webp"
+          autoPlay
+          muted
+          loop
+          playsInline
+          controls
+          aria-label="Fit Pass concept film"
+        />
+      ) : (
+        <img
+          src={`/fit-pass-${view}.webp`}
+          alt={
+            view === "model"
+              ? "Fit Pass campaign portrait"
+              : view === "airtag"
+                ? "Fit Pass garment tap accessory"
+                : "Fit Pass Apple Wallet experience"
+          }
+        />
+      )}
+      <figcaption>
+        <span>{copy.eyebrow}</span>
+        <strong>{copy.title}</strong>
+        <p>{copy.note}</p>
+      </figcaption>
+    </motion.figure>
+  );
+}
+
 export default function HomePage() {
   const [tab, setTab] = useState<Exclude<Tab, "scan">>("fit");
   const [scanOpen, setScanOpen] = useState(false);
+  const [siteView, setSiteView] = useState<SiteView>("app");
 
   useEffect(() => {
     const saved = window.localStorage.getItem("fit-check-tab") as Tab | null;
@@ -544,32 +535,52 @@ export default function HomePage() {
         <h2>A verdict.<br />Not your body.</h2>
         <p>Anonymous fit trust for people built like you.</p>
       </aside>
-      <div className="phone-shell">
-        <span className="phone-notch" aria-hidden="true" />
+      <section className="website-experience">
+        <nav className="website-tabs" aria-label="Explore Fit Check">
+          {(["app", "film", "model", "airtag", "wallet"] as const).map((view) => (
+            <button
+              key={view}
+              className={siteView === view ? "active" : ""}
+              onClick={() => setSiteView(view)}
+              aria-current={siteView === view ? "page" : undefined}
+            >
+              {view === "app" ? "App" : view === "airtag" ? "AirTag" : view[0].toUpperCase() + view.slice(1)}
+            </button>
+          ))}
+        </nav>
         <AnimatePresence mode="wait">
-          {tab === "fit" && <PassHome key="fit" onScan={() => navigate("scan")} />}
-          {tab === "closet" && <Closet key="closet" />}
-          {tab === "profile" && <Profile key="profile" />}
-        </AnimatePresence>
-        <BottomNav current={scanOpen ? "scan" : tab} onNavigate={navigate} />
-        <AnimatePresence>
-          {scanOpen && (
-            <>
-              <motion.button
-                className="sheet-backdrop"
-                aria-label="Close scanner"
-                onClick={() => setScanOpen(false)}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.24 }}
-              />
-              <ScanFlow key="scan" onClose={() => setScanOpen(false)} onDone={() => navigate("fit")} />
-            </>
+          {siteView === "app" ? (
+            <motion.div key="app" className="phone-shell" {...screenMotion}>
+              <span className="phone-notch" aria-hidden="true" />
+              <AnimatePresence mode="wait">
+                {tab === "fit" && <PassHome key="fit" onScan={() => navigate("scan")} />}
+                {tab === "closet" && <Closet key="closet" />}
+                {tab === "profile" && <Profile key="profile" />}
+              </AnimatePresence>
+              <BottomNav current={scanOpen ? "scan" : tab} onNavigate={navigate} />
+              <AnimatePresence>
+                {scanOpen && (
+                  <>
+                    <motion.button
+                      className="sheet-backdrop"
+                      aria-label="Close scanner"
+                      onClick={() => setScanOpen(false)}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.24 }}
+                    />
+                    <ScanFlow key="scan" onClose={() => setScanOpen(false)} onDone={() => navigate("fit")} />
+                  </>
+                )}
+              </AnimatePresence>
+              <span className="phone-home" aria-hidden="true" />
+            </motion.div>
+          ) : (
+            <ConceptAsset key={siteView} view={siteView} />
           )}
         </AnimatePresence>
-        <span className="phone-home" aria-hidden="true" />
-      </div>
+      </section>
     </main>
   );
 }

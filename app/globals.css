@@ -45,9 +45,18 @@ button { color: inherit; font: inherit; -webkit-tap-highlight-color: transparent
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.12'/%3E%3C/svg%3E");
 }
 
-.phone-shell {
+.website-experience {
   width: min(390px, 100%);
   height: min(844px, calc(100svh - 36px));
+  position: relative;
+  z-index: 2;
+}
+
+.website-tabs { display: none; }
+
+.phone-shell {
+  width: 100%;
+  height: 100%;
   position: relative;
   z-index: 2;
   overflow: hidden;
@@ -250,71 +259,60 @@ button { color: inherit; font: inherit; -webkit-tap-highlight-color: transparent
 .shop-pick-grid span { color: var(--muted); font-family: "IBM Plex Mono", monospace; font-size: 6px; letter-spacing: .07em; }
 .shop-pick-grid i { color: var(--sage-dark); font-style: normal; font-weight: 500; }
 
-.asset-showcase { margin-top: 25px; }
-.asset-heading {
-  min-height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-top: 1px solid var(--line);
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 7px;
-  letter-spacing: .14em;
-}
-.asset-heading small { color: var(--sage-dark); font-size: 6px; }
-.asset-tabs {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  padding: 3px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: rgba(216,207,188,.18);
-}
-.asset-tabs button {
-  min-height: 30px;
-  padding: 0 5px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--muted);
-  font-size: 8px;
-  cursor: pointer;
-  transition: background .2s ease, color .2s ease;
-}
-.asset-tabs button.active { background: var(--ink); color: var(--paper); }
-.asset-stage {
-  height: 340px;
-  margin: 12px 0 0;
-  position: relative;
+.website-asset {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  position: absolute;
+  inset: 0;
   overflow: hidden;
-  border-radius: 17px;
+  border: 1.5px solid var(--ink);
+  border-radius: 28px;
   background: var(--card);
+  box-shadow: 10px 12px 0 rgba(23,20,15,.12);
 }
-.asset-stage img, .asset-stage video {
+.website-asset img, .website-asset video {
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
 }
-.asset-stage figcaption {
+.website-asset figcaption {
   position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
-  min-height: 58px;
-  padding: 10px 12px;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  min-height: 112px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 3px;
+  gap: 5px;
   border: 1px solid rgba(243,238,227,.42);
-  border-radius: 11px;
-  background: rgba(23,20,15,.78);
+  border-radius: 14px;
+  background: rgba(23,20,15,.82);
   color: var(--paper);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
 }
-.asset-stage figcaption span { font-family: "IBM Plex Mono", monospace; font-size: 6px; letter-spacing: .14em; opacity: .72; }
-.asset-stage figcaption strong { font-family: "Fraunces", serif; font-size: 15px; font-weight: 500; }
+.website-asset figcaption span {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 8px;
+  letter-spacing: .16em;
+  opacity: .72;
+}
+.website-asset figcaption strong {
+  font-family: "Fraunces", serif;
+  font-size: 24px;
+  font-weight: 500;
+}
+.website-asset figcaption p {
+  max-width: 360px;
+  margin: 0;
+  color: rgba(243,238,227,.72);
+  font-family: "Fraunces", serif;
+  font-size: 13px;
+  line-height: 1.35;
+}
 
 .home-action { margin-top: 6px; }
 .home-action .ledger-cta { margin-top: 24px; }
@@ -752,6 +750,7 @@ button { color: inherit; font: inherit; -webkit-tap-highlight-color: transparent
 @media (max-width: 520px) {
   html, body, .app-shell { background: var(--paper); }
   .app-shell { width: 100%; height: 100svh; min-height: 0; padding: 0; display: block; overflow: hidden; }
+  .website-experience { width: 100%; height: 100svh; }
   .phone-shell { width: 100%; height: 100svh; border: 0; border-radius: 0; box-shadow: none; }
   .ledger-pane, .simple-page { padding-top: max(48px, calc(env(safe-area-inset-top) + 34px)); }
   .bottom-nav { height: calc(82px + env(safe-area-inset-bottom)); padding-bottom: max(12px, env(safe-area-inset-bottom)); }
@@ -766,8 +765,43 @@ button { color: inherit; font: inherit; -webkit-tap-highlight-color: transparent
   .verdict-stamp { margin-top: 95px; }
 }
 
-@media (min-width: 900px) {
-  .app-shell { grid-template-columns: minmax(280px, 380px) 390px; gap: 88px; }
+@media (min-width: 700px) {
+  .app-shell { grid-template-columns: minmax(230px, 360px) minmax(390px, 540px); gap: clamp(36px, 7vw, 88px); }
+  .website-experience {
+    width: min(540px, 100%);
+    height: min(900px, calc(100svh - 28px));
+    padding-top: 58px;
+  }
+  .website-tabs {
+    width: 100%;
+    height: 44px;
+    padding: 4px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(243,238,227,.76);
+    backdrop-filter: blur(14px);
+  }
+  .website-tabs button {
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 10px;
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease;
+  }
+  .website-tabs button.active { background: var(--ink); color: var(--paper); }
+  .website-experience .phone-shell {
+    width: 390px;
+    height: 100%;
+    margin: 0 auto;
+  }
+  .website-asset { top: 58px; height: calc(100% - 58px); }
   .desktop-context { display: block; z-index: 2; max-width: 360px; }
   .desktop-context > span { font-family: "IBM Plex Mono", monospace; font-size: 9px; letter-spacing: .18em; color: var(--muted); }
   .desktop-context h2 { margin: 17px 0; font-family: "Fraunces", serif; font-size: 56px; font-weight: 500; line-height: 1; letter-spacing: -.025em; }
