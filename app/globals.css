@@ -281,7 +281,7 @@ button { color: inherit; font: inherit; -webkit-tap-highlight-color: transparent
   position: absolute;
   left: 18px;
   right: 18px;
-  bottom: 18px;
+  top: 18px;
   min-height: 112px;
   padding: 16px 18px;
   display: flex;
