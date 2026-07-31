@@ -250,7 +250,73 @@ button { color: inherit; font: inherit; -webkit-tap-highlight-color: transparent
 .shop-pick-grid span { color: var(--muted); font-family: "IBM Plex Mono", monospace; font-size: 6px; letter-spacing: .07em; }
 .shop-pick-grid i { color: var(--sage-dark); font-style: normal; font-weight: 500; }
 
-.home-action { margin-top: auto; }
+.asset-showcase { margin-top: 25px; }
+.asset-heading {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--line);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 7px;
+  letter-spacing: .14em;
+}
+.asset-heading small { color: var(--sage-dark); font-size: 6px; }
+.asset-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(216,207,188,.18);
+}
+.asset-tabs button {
+  min-height: 30px;
+  padding: 0 5px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 8px;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease;
+}
+.asset-tabs button.active { background: var(--ink); color: var(--paper); }
+.asset-stage {
+  height: 340px;
+  margin: 12px 0 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: 17px;
+  background: var(--card);
+}
+.asset-stage img, .asset-stage video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+.asset-stage figcaption {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  min-height: 58px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  border: 1px solid rgba(243,238,227,.42);
+  border-radius: 11px;
+  background: rgba(23,20,15,.78);
+  color: var(--paper);
+  backdrop-filter: blur(8px);
+}
+.asset-stage figcaption span { font-family: "IBM Plex Mono", monospace; font-size: 6px; letter-spacing: .14em; opacity: .72; }
+.asset-stage figcaption strong { font-family: "Fraunces", serif; font-size: 15px; font-weight: 500; }
+
+.home-action { margin-top: 6px; }
 .home-action .ledger-cta { margin-top: 24px; }
 
 .sheet-backdrop {

@@ -134,6 +134,7 @@ function PrimaryButton({
 
 function PassHome({ onScan }: { onScan: () => void }) {
   const [preferences, setPreferences] = useState(["Fitted shoulders", "Relaxed waist"]);
+  const [assetTab, setAssetTab] = useState<"film" | "model" | "airtag" | "wallet">("film");
   const togglePreference = (preference: string) =>
     setPreferences((current) =>
       current.includes(preference)
@@ -195,6 +196,65 @@ function PassHome({ onScan }: { onScan: () => void }) {
           </button>
         </div>
       </div>
+
+      <section className="asset-showcase" aria-label="Fit Pass concept assets">
+        <div className="asset-heading">
+          <span>THE CONCEPT</span>
+          <small>EXPLORE THE SYSTEM</small>
+        </div>
+        <div className="asset-tabs" role="tablist" aria-label="Concept assets">
+          {(["film", "model", "airtag", "wallet"] as const).map((asset) => (
+            <button
+              key={asset}
+              role="tab"
+              aria-selected={assetTab === asset}
+              className={assetTab === asset ? "active" : ""}
+              onClick={() => setAssetTab(asset)}
+            >
+              {asset === "airtag" ? "AirTag" : asset[0].toUpperCase() + asset.slice(1)}
+            </button>
+          ))}
+        </div>
+        <AnimatePresence mode="wait">
+          <motion.figure
+            key={assetTab}
+            className="asset-stage"
+            initial={{ opacity: 0, y: 9, scale: .992 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: .996 }}
+            transition={{ duration: .3, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {assetTab === "film" ? (
+              <video
+                src="/fit-pass-film.mp4"
+                poster="/fit-pass-airtag.webp"
+                autoPlay
+                muted
+                loop
+                playsInline
+                aria-label="Fit Pass concept film"
+              />
+            ) : (
+              <img
+                src={`/fit-pass-${assetTab}.webp`}
+                alt={
+                  assetTab === "model"
+                    ? "Fit Pass campaign portrait"
+                    : assetTab === "airtag"
+                      ? "Fit Pass garment tap accessory"
+                      : "Fit Pass Apple Wallet experience"
+                }
+              />
+            )}
+            <figcaption>
+              <span>{assetTab === "film" ? "15 SEC FILM" : assetTab === "model" ? "THE HOLDER" : assetTab === "airtag" ? "THE TAP" : "THE PASS"}</span>
+              <strong>
+                {assetTab === "film" ? "See the system in motion" : assetTab === "model" ? "Personal, never exposed" : assetTab === "airtag" ? "Fit trust at the garment" : "Your verdict, in your wallet"}
+              </strong>
+            </figcaption>
+          </motion.figure>
+        </AnimatePresence>
+      </section>
 
       <div className="home-action">
         <PrimaryButton onClick={onScan}>Start a Fit Check</PrimaryButton>
