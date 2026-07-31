@@ -136,7 +136,7 @@ function PrimaryButton({
 }
 
 function PassHome({ onScan }: { onScan: () => void }) {
-  const [preferences, setPreferences] = useState(["Fitted shoulders", "Relaxed waist"]);
+  const [preferences, setPreferences] = useState(["Structured", "Relaxed"]);
   const togglePreference = (preference: string) =>
     setPreferences((current) =>
       current.includes(preference)
@@ -148,15 +148,14 @@ function PassHome({ onScan }: { onScan: () => void }) {
     <motion.section className="screen home-page with-nav" {...screenMotion}>
       <LedgerBar label="FIT CHECK" />
       <div className="home-intro">
-        <span className="home-kicker"><i /> YOUR PRIVATE FIT PROFILE IS ACTIVE</span>
-        <h1 className="tailor-voice">Know the fit.<br />Skip the guess.</h1>
-        <p>One private profile translates every brand into a verdict you can trust.</p>
+        <span className="home-kicker"><i /> PRIVATE FIT · ACTIVE</span>
+        <h1 className="tailor-voice">Your fit.<br />Everywhere.</h1>
       </div>
 
       <div className="home-preferences">
-        <span>YOUR FIT</span>
+        <span>FIT YOU LIKE</span>
         <div>
-          {["Fitted shoulders", "Relaxed waist", "Full length"].map((preference) => (
+          {["Structured", "Relaxed", "Full length"].map((preference) => (
             <button
               key={preference}
               className={preferences.includes(preference) ? "selected" : ""}
@@ -170,37 +169,35 @@ function PassHome({ onScan }: { onScan: () => void }) {
         </div>
       </div>
 
-      <button className="recent-fit" aria-label="Open latest fit check">
-        <span className="recent-art"><Shirt size={34} strokeWidth={1.35} /></span>
-        <span className="recent-copy">
-          <small>LAST FIT CHECK · NORTH STUDIO</small>
-          <strong>Unstructured blazer</strong>
-          <em><Check size={12} /> Best fit — M, altered</em>
+      <button className="fit-visual" aria-label="Open latest fit check">
+        <img src="/fit-check-wardrobe.webp" alt="Neutral capsule wardrobe arranged on ivory linen" />
+        <span className="fit-visual-badge"><Check size={11} /> BEST FIT</span>
+        <span className="fit-visual-copy">
+          <small>LAST CHECK</small>
+          <strong>Blazer · M</strong>
+          <ChevronRight size={16} />
         </span>
-        <ChevronRight size={18} />
       </button>
 
       <div className="shop-picks">
         <div className="shop-picks-head">
-          <span>FROM YOUR SHOPS</span>
-          <small>PRIVATE FIT PICKS</small>
+          <span>PICKS FOR YOU</span>
+          <small>VIEW ALL</small>
         </div>
         <div className="shop-pick-grid">
           <button>
-            <small>EVERLANE</small>
-            <strong>Wool blazer</strong>
-            <span><i>92%</i> FIT MATCH · M</span>
+            <img src="/fit-check-closet.webp" alt="Ivory tailored blazer" />
+            <span><small>EVERLANE</small><strong>Blazer · M</strong><i>92%</i></span>
           </button>
           <button>
-            <small>COS</small>
-            <strong>Barrel trousers</strong>
-            <span><i>88%</i> FIT MATCH · S</span>
+            <img src="/fit-check-wardrobe.webp" alt="Charcoal wide-leg trousers" />
+            <span><small>COS</small><strong>Trouser · S</strong><i>88%</i></span>
           </button>
         </div>
       </div>
 
       <div className="home-action">
-        <PrimaryButton onClick={onScan}>Start a Fit Check</PrimaryButton>
+        <PrimaryButton onClick={onScan}>Scan a garment</PrimaryButton>
       </div>
     </motion.section>
   );
@@ -346,18 +343,18 @@ function ScanFlow({ onDone, onClose }: { onDone: () => void; onClose: () => void
 function Closet() {
   const [closetTab, setClosetTab] = useState<"inventory" | "favorites">("inventory");
   const inventory = [
-    { name: "Unstructured blazer", brand: "North Studio", fit: "M · altered", status: "Best fit", favorite: true },
-    { name: "Wide-leg trousers", brand: "Atelier West", fit: "S · hemmed", status: "Good fit", favorite: true },
-    { name: "Rib-knit top", brand: "Morrow", fit: "M", status: "Size up", favorite: false },
-    { name: "Longline coat", brand: "COS", fit: "S · relaxed", status: "Good fit", favorite: false },
-    { name: "Silk column skirt", brand: "Aritzia", fit: "4", status: "Best fit", favorite: true },
+    { name: "Blazer", brand: "North Studio", fit: "M", status: "Best fit", favorite: true, image: "/fit-check-closet.webp", position: "72% 42%" },
+    { name: "Wide-leg", brand: "Atelier West", fit: "S", status: "Good fit", favorite: true, image: "/fit-check-wardrobe.webp", position: "28% 55%" },
+    { name: "Sage knit", brand: "Morrow", fit: "M", status: "Size up", favorite: false, image: "/fit-check-closet.webp", position: "57% 88%" },
+    { name: "Silk skirt", brand: "Aritzia", fit: "4", status: "Best fit", favorite: true, image: "/fit-check-wardrobe.webp", position: "78% 78%" },
+    { name: "Black loafer", brand: "Vagabond", fit: "38", status: "Good fit", favorite: false, image: "/fit-check-closet.webp", position: "18% 88%" },
   ];
   const items = closetTab === "favorites" ? inventory.filter((item) => item.favorite) : inventory;
 
   return (
     <motion.section className="screen simple-page closet-page with-nav" {...screenMotion}>
       <LedgerBar label="THE CLOSET" />
-      <h1 className="tailor-voice">Fits worth<br />remembering.</h1>
+      <h1 className="tailor-voice">The keepers.</h1>
       <div className="closet-summary" aria-label="Closet summary">
         <span><strong>12</strong> pieces</span>
         <i />
@@ -390,21 +387,23 @@ function Closet() {
           exit={{ opacity: 0, y: -5 }}
           transition={{ duration: 0.22 }}
         >
-          {items.map((item, index) => (
+          {items.map((item) => (
             <button key={item.name}>
-              <span className="closet-index">0{index + 1}</span>
-              <span>
+              <span className="closet-image">
+                <img src={item.image} alt={item.name} style={{ objectPosition: item.position }} />
+                <em className={item.status !== "Size up" ? "good" : ""}>{item.status}</em>
+                {item.favorite && <Heart className="favorite-heart" size={14} fill="currentColor" />}
+              </span>
+              <span className="closet-card-copy">
                 <small>{item.brand}</small>
                 <strong>{item.name}</strong>
-                <em>{item.fit}</em>
+                <i>{item.fit}</i>
               </span>
-              <span className={`fit-status ${item.status !== "Size up" ? "good" : ""}`}>{item.status}</span>
-              {item.favorite ? <Heart className="favorite-heart" size={15} fill="currentColor" /> : <ChevronRight size={17} />}
             </button>
           ))}
         </motion.div>
       </AnimatePresence>
-      <p className="page-note">Only verdicts are saved here.<br />Measurements stay on your pass.</p>
+      <p className="page-note">Fit notes only. Measurements stay private.</p>
     </motion.section>
   );
 }
@@ -450,7 +449,7 @@ function Profile() {
   return (
     <motion.section className="screen simple-page profile-page with-nav" {...screenMotion}>
       <LedgerBar label="YOUR PASS" />
-      <h1 className="tailor-voice">One body,<br />kept private.</h1>
+      <h1 className="tailor-voice">Private<br />by design.</h1>
       <div className="profile-pass">
         <span className="profile-monogram">A</span>
         <span>
@@ -502,13 +501,9 @@ function Profile() {
         </div>
         <p>Prototype scan values · not inferred from the portrait.</p>
       </section>
-      <div className="profile-facts">
-        <div><span>18</span><small>ANONYMOUS<br />BODY MATCHES</small></div>
-        <div><span>03</span><small>GARMENTS<br />REMEMBERED</small></div>
-      </div>
       <div className="profile-rule">
         <LockKeyhole size={19} />
-        <span><strong>Your measurements never leave this device.</strong><small>Stores receive only the verdict you approve.</small></span>
+        <span><strong>Only your verdict leaves this device.</strong></span>
       </div>
     </motion.section>
   );
