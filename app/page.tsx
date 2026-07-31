@@ -196,7 +196,12 @@ function Welcome({ onNext, onDemo }: { onNext: () => void; onDemo: () => void })
             {label}
           </motion.span>
         ))}
-        <motion.div className="pass-token" animate={{ rotate: [0, 2, 0] }} transition={{ duration: 4, repeat: Infinity }}>
+        <motion.div
+          className="pass-token"
+          initial={{ x: "-50%", y: "-50%" }}
+          animate={{ x: "-50%", y: "-50%", rotate: [0, 2, 0] }}
+          transition={{ duration: 4, repeat: Infinity }}
+        >
           <div className="token-top"><Brand /><ShieldCheck size={20} /></div>
           <div className="body-glyph"><span /><i /><b /></div>
           <div><small>PERSONAL FIT PROFILE</small><strong>ONE FIT, EVERY BRAND</strong></div>
@@ -347,29 +352,43 @@ function GarmentScan({ onComplete }: { onComplete: () => void }) {
   useEffect(() => () => { if (timer.current) window.clearInterval(timer.current); }, []);
   return (
     <motion.section className={`screen garment-scan-screen ${complete ? "success" : ""}`} {...screenMotion}>
-      <PhoneHeader step="IN STORE" />
-      <div className="scan-copy centered">
-        <span className="eyebrow accent">GARMENT TAP</span>
-        <h2>{complete ? "Garment received" : "Bring the tag close."}</h2>
-        <p>{complete ? "Comparing the jacket with your private Fit Check…" : "Press and hold below to simulate an NFC garment tap."}</p>
+      <div className="scan-ledger-bar">
+        <span className="eyebrow">FIT CHECK · THE TAP</span>
+        <span />
+        <small>{complete ? "READ" : "READY"}</small>
       </div>
-      <div className="nfc-stage">
-        <motion.div className="physical-tag" animate={complete ? { x: 25, y: 8, rotate: 4, scale: 0.82, opacity: 0 } : { y: [0, -6, 0] }} transition={{ duration: 1.8, repeat: complete ? 0 : Infinity }}>
-          <span>NORTH<br />STUDIO</span><b>M</b><small>STRUCTURED LINEN</small>
+      <div className="scan-ledger-copy">
+        <h2>{complete ? "Held against a body it never sees." : "Tap the tag.\nKnow the fit."}</h2>
+        <p>{complete ? "Your private profile is comparing proportion, preference, and anonymous fit signals." : "Hold the garment tag near your phone. No measurements leave your Fit Check."}</p>
+      </div>
+      <div className="ledger-stage">
+        <motion.div
+          className="ledger-tag"
+          animate={complete ? { x: 118, y: 112, rotate: 6, scale: 0.5, opacity: 0 } : { y: [0, -5, 0], rotate: [-2, 0, -2] }}
+          transition={{ duration: complete ? 0.55 : 2.2, repeat: complete ? 0 : Infinity, ease: "easeInOut" }}
+        >
+          <div><span>NORTH STUDIO</span><b>M</b></div>
+          <small>STRUCTURED LINEN JACKET</small>
         </motion.div>
-        <div className="nfc-waves"><i /><i /><i /></div>
-        <div className="phone-frame">
-          <div className="phone-island" />
-          <AnimatePresence mode="wait">
-            {complete ? (
-              <motion.div key="garment" initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} className="phone-garment">
-                <GarmentImage />
-                <strong>Structured Linen Jacket</strong><small>North Studio · Size M</small>
+        <div className={`ledger-garment ${progress > 0 ? "reading" : ""}`}>
+          <GarmentImage />
+          <motion.span
+            className="ledger-scan-line"
+            animate={progress > 0 && !complete ? { top: ["18%", "76%", "18%"] } : { top: "18%" }}
+            transition={{ duration: 1.35, repeat: progress > 0 && !complete ? Infinity : 0, ease: "easeInOut" }}
+          />
+          <AnimatePresence>
+            {complete && (
+              <motion.div className="read-stamp" initial={{ opacity: 0, scale: 1.25, rotate: -8 }} animate={{ opacity: 1, scale: 1, rotate: -4 }}>
+                GARMENT<br />READ
               </motion.div>
-            ) : (
-              <motion.div key="ready" className="phone-ready" exit={{ opacity: 0 }}><ScanLine size={38} /><span>Ready to receive</span></motion.div>
             )}
           </AnimatePresence>
+        </div>
+        <div className="ledger-transfer" aria-hidden="true"><i /><i /><i /></div>
+        <div className="ledger-readout">
+          <span>{complete ? "MATCHING FIT PROFILE" : progress > 0 ? "READING GARMENT" : "NFC READY"}</span>
+          <strong>{complete ? "Private comparison in progress" : "No name · No numbers · No photo"}</strong>
         </div>
       </div>
       <button
@@ -381,9 +400,9 @@ function GarmentScan({ onComplete }: { onComplete: () => void }) {
         onKeyDown={(e) => { if (e.key === " " || e.key === "Enter") start(); }}
         onKeyUp={stop}
       >
-        <span><ScanLine size={20} /></span>{complete ? "Tap complete" : "Press & hold to tap garment"}
+        <span><ScanLine size={18} /></span>{complete ? "Garment received" : "Press & hold to tap garment"}
       </button>
-      <small className="hold-hint">Keep holding until the ring completes</small>
+      <small className="hold-hint">{complete ? "Nothing but the fit result is shared" : "Hold until the reading completes"}</small>
     </motion.section>
   );
 }
